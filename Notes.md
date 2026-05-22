@@ -9,7 +9,7 @@
 python -m venv .venv
 
 # Ativar o ambiente virtual
-.venv\Scripts\Activate.ps1
+.venv\Scripts\Activate
 
 # Se der erro de permissão
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
