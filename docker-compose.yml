@@ -1,0 +1,30 @@
+services: # Define os containers que vão rodar
+
+  postgres: # Serviço do banco de dados
+    image: postgres:16 # Imagem oficial do PostgreSQL versão 16
+    container_name: sendyouai_postgres # Nome do container no Docker
+    restart: always # Reinicia automaticamente se o container cair
+    environment: # Variáveis de configuração do banco
+      POSTGRES_USER: admin # Usuário do banco
+      POSTGRES_PASSWORD: admin123 # Senha do banco
+      POSTGRES_DB: sendyouai # Nome do banco que será criado
+    ports:
+      - "5432:5432" # Expõe a porta do banco para a máquina local sua_maquina:container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persiste os dados em disco
+
+  pgadmin: # Serviço da interface visual do banco
+    image: dpage/pgadmin4 # Imagem oficial do PgAdmin
+    container_name: sendyouai_pgadmin # Nome do container no Docker
+    restart: always # Reinicia automaticamente se o container cair
+    environment: # Credenciais de acesso à interface web
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com # Email para login
+      PGADMIN_DEFAULT_PASSWORD: admin123 # Senha para login
+    ports:
+      - "8080:80" # Acessa o PgAdmin em localhost:8080
+    depends_on:
+      - postgres # Garante que o postgres sobe antes do pgadmin
+
+volumes:
+  postgres_data: # Volume persistente para não perder os dados do banco000
+   # Docker cria um espaço em disco para guardar os dados
