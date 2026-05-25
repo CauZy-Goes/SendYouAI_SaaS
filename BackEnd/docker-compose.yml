@@ -12,7 +12,7 @@ services: # Define os containers que vão rodar
       - "5432:5432" # Expõe a porta do banco para a máquina local sua_maquina:container
     volumes:
       - postgres_data:/var/lib/postgresql/data # Persiste os dados em disco
-
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Executa o SQL na primeira vez
   pgadmin: # Serviço da interface visual do banco
     image: dpage/pgadmin4 # Imagem oficial do PgAdmin
     container_name: sendyouai_pgadmin # Nome do container no Docker
@@ -22,6 +22,8 @@ services: # Define os containers que vão rodar
       PGADMIN_DEFAULT_PASSWORD: admin123 # Senha para login
     ports:
       - "8080:80" # Acessa o PgAdmin em localhost:8080
+    volumes:
+      - ./sql/servers.json:/pgadmin4/servers.json # Configura o server automaticamente
     depends_on:
       - postgres # Garante que o postgres sobe antes do pgadmin
 

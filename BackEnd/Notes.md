@@ -9,7 +9,7 @@
 python -m venv .venv
 
 # Ativar o ambiente virtual
-.venv\Scripts\Activate
+python .venv\Scripts\Activate
 
 # Se der erro de permissão
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -40,6 +40,7 @@ uvicorn main:app --reload
 - `--reload` → reinicia ao salvar alterações
 
 **URLs disponíveis:**
+
 - `http://localhost:8000` → API
 - `http://localhost:8000/docs` → documentação interativa
 
@@ -67,12 +68,23 @@ git push -u origin main
 docker compose up -d
 ```
 
+docker compose down -v
+docker compose up -d
+
 **Acesso ao PgAdmin:**
+
 - URL: `http://localhost:8080`
 - Email: `admin@admin.com`
 - Senha: `admin123`
 
+Host: postgres
+Port: 5432
+Database: sendyouai
+Username: admin
+Password: admin123
+
 **Conectar PgAdmin ao Postgres:**
+
 - Host: `postgres`
 - Port: `5432`
 - Database: `sendyouai`
@@ -80,6 +92,7 @@ docker compose up -d
 - Password: `admin123`
 
 **Credenciais do banco:**
+
 ```
 Host:     localhost
 Porta:    5432
@@ -111,6 +124,6 @@ SendYouAI/
 
 ---
 
-
 ```
 
+```
