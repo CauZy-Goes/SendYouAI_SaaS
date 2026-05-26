@@ -9,7 +9,7 @@
 python -m venv .venv
 
 # Ativar o ambiente virtual
-.venv\Scripts\Activate.ps1
+.venv\Scripts\Activate
 
 # Se der erro de permissão
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -19,27 +19,61 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ## 2. Instalar Dependências
 
-```powershell
+````powershell
 # FastAPI e servidor
 pip install fastapi uvicorn
 
-# Banco de dados
-pip install sqlalchemy psycopg2-binary python-dotenv
-```
+pip install passlib bcrypt
 
----
+# Banco de dados
+pip install sqlalchemy psycopg2-binary python-dotenv passlib bcrypt
+
+O que cada dependência faz
+fastapi — o framework web para criar a API
+
+uvicorn — servidor que roda a API
+
+passlib — biblioteca de hashing de senhas, suporta vários algoritmos
+
+bcrypt — algoritmo de hash usado pelo passlib para proteger senhas
+
+sqlalchemy — ORM que transforma classes Python em tabelas do banco
+
+psycopg2-binary — driver que conecta ao PostgreSQL
+
+python-dotenv — lê variáveis do arquivo .env
+
+requirements.txt
+Gerar — captura todas as dependências instaladas no ambiente:
+
+
+pip freeze > requirements.txt
+Instalar — instala tudo que está no arquivo (útil quando alguém clona o projeto):
+
+pip install -r requirements.txt
+O requirements.txt gerado vai ficar assim:
+
+fastapi
+uvicorn
+passlib
+bcrypt
+sqlalchemy
+psycopg2-binary
+python-dotenv
+Sempre rode o pip freeze > requirements.txt depois de instalar uma dependência nova para manter o arquivo atualizado. ✅
 
 ## 3. Rodar a API
 
 ```powershell
 uvicorn app.main:app --reload
-```
+````
 
 - `app.main` → pasta `app/` arquivo `main.py`
 - `app` → nome da variável FastAPI
 - `--reload` → reinicia ao salvar alterações
 
 **URLs disponíveis:**
+
 - `http://localhost:8000` → API
 - `http://localhost:8000/docs` → documentação interativa
 
@@ -67,10 +101,10 @@ git push --force origin main
 ## 5. Docker — PostgreSQL + PgAdmin
 
 ```powershell
-# Subir os containers
+# Subir os containers O  -d significa detached — roda os containers em background, liberando o terminal.
 docker compose up -d
 
-# Derrubar os containers
+# Derrubar os containers O -v significa volumes — ele apaga o volume postgres_data junto com os containers.
 docker compose down
 
 # Derrubar e apagar volume (recriar banco do zero)
@@ -82,11 +116,13 @@ wsl --shutdown
 ```
 
 **Acesso ao PgAdmin:**
+
 - URL: `http://localhost:8080`
 - Email: `admin@admin.com`
 - Senha: `admin123`
 
 **Credenciais do banco:**
+
 ```
 Host:     postgres  (dentro do Docker)
 Host:     localhost (fora do Docker)
@@ -135,6 +171,7 @@ npx create-next-app@latest frontend ou npx create-next-app@latest .
 ```
 
 **Opções recomendadas:**
+
 ```
 TypeScript?         Yes
 ESLint?             Yes
@@ -151,8 +188,7 @@ npm run dev
 ```
 
 **URL disponível:**
+
 - `http://localhost:3000` → Frontend
 
 ---
-
-
