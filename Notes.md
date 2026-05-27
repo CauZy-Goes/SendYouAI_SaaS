@@ -5,142 +5,144 @@
 ## 1. Ambiente Virtual
 
 ```powershell
-# Criar o ambiente virtual
-python -m venv .venv
-
-# Ativar o ambiente virtual
-.venv\Scripts\Activate
-
-# Se der erro de permissão
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+python -m venv .venv                                         # cria o ambiente virtual
+.venv\Scripts\Activate.ps1                                   # ativa o ambiente
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser          # libera execução de scripts (se der erro)
 ```
 
 ---
 
-## 2. Instalar Dependências
+## 2. Dependências
 
-````powershell
-# FastAPI e servidor
-pip install fastapi uvicorn
+```powershell
+pip install fastapi uvicorn                          # API e servidor
+pip install sqlalchemy psycopg2-binary python-dotenv # banco de dados
+pip install passlib==1.7.4 bcrypt==4.0.1             # hash de senha
+pip freeze > requirements.txt                        # salva dependências
+pip install -r requirements.txt                      # instala dependências salvas
+```
 
-pip install passlib bcrypt
-
-# Banco de dados
-pip install sqlalchemy psycopg2-binary python-dotenv passlib bcrypt
-
-O que cada dependência faz
-fastapi — o framework web para criar a API
-
-uvicorn — servidor que roda a API
-
-passlib — biblioteca de hashing de senhas, suporta vários algoritmos
-
-bcrypt — algoritmo de hash usado pelo passlib para proteger senhas
-
-sqlalchemy — ORM que transforma classes Python em tabelas do banco
-
-psycopg2-binary — driver que conecta ao PostgreSQL
-
-python-dotenv — lê variáveis do arquivo .env
-
-requirements.txt
-Gerar — captura todas as dependências instaladas no ambiente:
-
-
-pip freeze > requirements.txt
-Instalar — instala tudo que está no arquivo (útil quando alguém clona o projeto):
-
-pip install -r requirements.txt
-O requirements.txt gerado vai ficar assim:
-
-fastapi
-uvicorn
-passlib
-bcrypt
-sqlalchemy
-psycopg2-binary
-python-dotenv
-Sempre rode o pip freeze > requirements.txt depois de instalar uma dependência nova para manter o arquivo atualizado. ✅
+---
 
 ## 3. Rodar a API
 
 ```powershell
-uvicorn app.main:app --reload
-````
-
-- `app.main` → pasta `app/` arquivo `main.py`
-- `app` → nome da variável FastAPI
-- `--reload` → reinicia ao salvar alterações
-
-**URLs disponíveis:**
+uvicorn app.main:app --reload   # sobe a API com reload automático
+```
 
 - `http://localhost:8000` → API
-- `http://localhost:8000/docs` → documentação interativa
+- `http://localhost:8000/docs` → Swagger (testar rotas)
 
 ---
 
-## 4. Git
+## 4. Docker
 
 ```powershell
-# Trocar remote de SSH para HTTPS
-git remote set-url origin https://github.com/CauZy-Goes/SendYouAI_SaaS.git
-
-# Verificar remote
-git remote -v
-
-# Subir código
-git push -u origin main
-
-# Renomear último commit
-git commit --amend -m "feat: descrição do commit"
-git push --force origin main
+docker compose up -d      # sobe os containers em background
+docker compose down       # derruba os containers
+docker compose down -v    # derruba e apaga o banco (recria do zero)
+docker ps                 # lista containers rodando
+docker logs <container>   # ver logs de um container
+wsl --shutdown            # desliga o WSL
 ```
+
+**Portas:**
+
+- `5432` → PostgreSQL
+- `8081` → PgAdmin (`admin@admin.com` / `admin123`)
+- `8082` → Evolution API
+
+**Banco:**
+
+- Host interno (Docker): `postgres`
+- Host externo: `localhost`
+- Usuário: `admin` | Senha: `admin123` | Banco: `sendyouai`
 
 ---
 
-## 5. Docker — PostgreSQL + PgAdmin
+## 5. Git
 
 ```powershell
-# Subir os containers O  -d significa detached — roda os containers em background, liberando o terminal.
-docker compose up -d
-
-# Derrubar os containers O -v significa volumes — ele apaga o volume postgres_data junto com os containers.
-docker compose down
-
-# Derrubar e apagar volume (recriar banco do zero)
-docker compose down -v
-docker compose up -d
-
-# Desligar WSL
-wsl --shutdown
-```
-
-**Acesso ao PgAdmin:**
-
-- URL: `http://localhost:8080`
-- Email: `admin@admin.com`
-- Senha: `admin123`
-
-**Credenciais do banco:**
-
-```
-Host:     postgres  (dentro do Docker)
-Host:     localhost (fora do Docker)
-Porta:    5432
-Banco:    sendyouai
-Usuário:  admin
-Senha:    admin123
+git remote set-url origin <url>                              # troca o remote
+git remote -v                                                # verifica o remote
+git push -u origin main                                      # primeiro push
+git commit --amend -m "mensagem"                             # renomeia último commit
+git push --force origin main                                 # força push após amend
+python -c "import secrets; print(secrets.token_hex(32))"    # gera chave segura
 ```
 
 ---
 
-## 6. Estrutura do Projeto
+## 6. Evolution API
+
+### Verificar se está no ar
+
+```http
+GET http://localhost:8082
+Headers: apikey: <sua-chave>
+```
+
+### Criar instância do WhatsApp
+
+```http
+POST http://localhost:8082/instance/create
+Headers: apikey: <sua-chave>
+Body:
+{
+  "instanceName": "sendyouai",
+  "qrcode": true,
+  "integration": "WHATSAPP-BAILEYS"
+}
+```
+
+### Gerar QR Code para escanear
+
+```http
+GET http://localhost:8082/instance/connect/sendyouai
+Headers: apikey: <sua-chave>
+```
+
+Ou acesse pelo manager: `http://localhost:8082/manager`
+
+### Listar instâncias
+
+```http
+GET http://localhost:8082/instance/fetchInstances
+Headers: apikey: <sua-chave>
+```
+
+### Deletar instância
+
+```http
+DELETE http://localhost:8082/instance/delete/sendyouai
+Headers: apikey: <sua-chave>
+```
+
+### Configurar Webhook
+
+```http
+POST http://localhost:8082/webhook/set/sendyouai
+Headers: apikey: <sua-chave>
+Body:
+{
+  "webhook": {
+    "enabled": true,
+    "url": "http://localhost:8000/webhook/whatsapp",
+    "webhook_by_events": false,
+    "webhook_base64": false,
+    "events": ["MESSAGES_UPSERT"]
+  }
+}
+```
+
+---
+
+## 7. Estrutura do Projeto
 
 ```
 SendYouAI/
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
 │   │   ├── main.py
 │   │   ├── database.py
 │   │   ├── models/
@@ -148,47 +150,9 @@ SendYouAI/
 │   │   ├── routers/
 │   │   └── services/
 │   ├── sql/
-│   │   └── init.sql
 │   ├── pgadmin/
-│   │   └── servers.json
 │   ├── .env
 │   └── docker-compose.yml
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
-├── .gitignore
-└── notes.md
+└── frontend/
+    └── app/
 ```
-
----
-
-## 7. Frontend — Next.js
-
-```powershell
-# Criar o projeto Next.js
-npx create-next-app@latest frontend ou npx create-next-app@latest .
-```
-
-**Opções recomendadas:**
-
-```
-TypeScript?         Yes
-ESLint?             Yes
-Tailwind CSS?       Yes
-src/ directory?     Yes
-App Router?         Yes
-Import alias?       No
-```
-
-```powershell
-# Entrar na pasta e rodar
-cd frontend
-npm run dev
-```
-
-**URL disponível:**
-
-- `http://localhost:3000` → Frontend
-
----

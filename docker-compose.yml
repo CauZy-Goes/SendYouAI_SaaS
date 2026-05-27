@@ -21,11 +21,31 @@ services: # Define os containers que vão rodar
       PGADMIN_DEFAULT_EMAIL: admin@admin.com # Email para login
       PGADMIN_DEFAULT_PASSWORD: admin123 # Senha para login
     ports:
-      - "8080:80" # Acessa o PgAdmin em localhost:8080
+      - "8081:80" # Acessa o PgAdmin em localhost:8080
     volumes:
       - ./sql/servers.json:/pgadmin4/servers.json # Configura o server automaticamente
     depends_on:
       - postgres # Garante que o postgres sobe antes do pgadmin
+
+  evolution:
+    image: atendai/evolution-api:latest
+    container_name: sendyouai_evolution
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      - SERVER_URL=http://localhost:8082
+      - AUTHENTICATION_API_KEY=147fe94bc67f86decfaa76230bd60287c5c37ef4184e0ac88b3f449c50d27107
+      - DATABASE_ENABLED=false
+      - DATABASE_PROVIDER=postgresql    
+      - DATABASE_CONNECTION_URI=postgresql://admin:admin123@postgres:5432/sendyouai
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#198754
+      - CONFIG_SESSION_PHONE_VERSION=2.3000.1040156871
+      - CONFIG_SESSION_PHONE_CLIENT=Chrome
+      - CONFIG_SESSION_PHONE_NAME=Chrome
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data: # Volume persistente para não perder os dados do banco000
